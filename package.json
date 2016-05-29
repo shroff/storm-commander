@@ -1,0 +1,8 @@
+{
+  "name": "stormy",
+  "version": "1.0.0",
+  "description": "Stormy server",
+  "main": "index.js",
+  "author": "Abhishek Shroff",
+  "license": "ISC"
+}
