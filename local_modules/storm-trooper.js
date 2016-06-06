@@ -17,14 +17,19 @@ var sendCommand = function(cmd) {
   }
 }
 
+var setColor = function(r, g, b, duration) {
+  var cmd = "c " + r + " " + g + " " + b + " " + duration;
+  sendCommand(cmd);
+}
 
-var setColor = function(r, g, b) {
-  var cmd = "c " + r + " " + g + " " + b;
+var pulse = function(r1, g1, b1, r2, g2, b2, duration) {
+  var cmd = "p " + r1 + " " + g1 + " " + b1 + " " + r2 + " " + g2 + " " + b2 + " " + duration;
   sendCommand(cmd);
 }
 
 var StormTrooper = {
-  "setColor": setColor
+  "setColor": setColor,
+  "pulse": pulse
 }
 
 module.exports = StormTrooper;
