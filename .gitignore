@@ -1,3 +1,7 @@
+# Temp files
+*.swp
+*.swo
+
 # Logs
 logs
 *.log
