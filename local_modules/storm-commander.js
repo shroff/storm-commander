@@ -27,9 +27,9 @@ var pulse = function(r1, g1, b1, r2, g2, b2, duration) {
   sendCommand(cmd);
 }
 
-var StormTrooper = {
+var StormCommander = {
   "setColor": setColor,
   "pulse": pulse
 }
 
-module.exports = StormTrooper;
+module.exports = StormCommander;

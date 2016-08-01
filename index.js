@@ -1,6 +1,6 @@
 var express = require("express");
 var bodyParser = require("body-parser");
-var stormTrooper = require("./local_modules/storm-trooper");
+var stormCommander = require("./local_modules/storm-commander");
 var app = express();
  
 app.use(bodyParser.json());
@@ -20,7 +20,7 @@ app.post("/lightemup", function(req, res) {
   let g = (color & 0xff00) >> 8;
   let b = (color & 0xff);
 
-  stormTrooper.setColor(r >> 1, g >> 1, b >> 1, duration);
+  stormCommander.setColor(r >> 1, g >> 1, b >> 1, duration);
 
   res.status(200);
   res.send("Setting color to: " + r + ", " + g + ", " + b + ".\n");
@@ -42,7 +42,7 @@ app.post("/pulse", function(req, res) {
 
   let duration = parseInt(req.body.duration);
 
-  stormTrooper.pulse(r1 >> 1, g1 >> 1, b1 >> 1, r2 >> 1, g2 >> 1, b2 >> 1, duration);
+  stormCommander.pulse(r1 >> 1, g1 >> 1, b1 >> 1, r2 >> 1, g2 >> 1, b2 >> 1, duration);
 
   res.status(200);
   let color1String = r1 + ", " + g1 + ", " + b1;
