@@ -1,8 +1,18 @@
 var SerialPort = require("serialport").SerialPort;
 var xbee = new SerialPort("/dev/ttyUSB0");
 
+const PREPARING = 0;
+const READY = 1;
+const ERROR = 2;
+var status = PREPARING;
+
 xbee.on("open", function() {
   console.log("XBee serial port opened");
+  status = READY;
+});
+xbee.on("error", function() {
+  console.log("Error opening serial port");
+  status = ERROR;
 });
 var sendCommand = function(cmd) {
   if (xbee.isOpen()) {
@@ -28,8 +38,11 @@ var pulse = function(r1, g1, b1, r2, g2, b2, duration) {
 }
 
 var StormCommander = {
-  "setColor": setColor,
-  "pulse": pulse
+  setColor: setColor,
+  pulse: pulse,
+  PREPARING: PREPARING,
+  READY: READY,
+  ERROR: ERROR
 }
 
 module.exports = StormCommander;
