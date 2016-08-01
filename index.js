@@ -1,6 +1,7 @@
 var express = require("express");
 var bodyParser = require("body-parser");
 var stormCommander = require("./local_modules/storm-commander");
+var discovery = require("./local_modules/discovery");
 var app = express();
  
 app.use(bodyParser.json());
@@ -60,6 +61,8 @@ app.get("/devices", function(req, res) {
   res.status(200);
   res.send(JSON.stringify(deviceList));
 });
+
+discovery.start();
 
 var server = app.listen(3000, function () {
   console.log("Listening on port %s...", server.address().port);
