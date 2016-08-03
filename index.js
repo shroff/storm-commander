@@ -3,12 +3,18 @@ var bodyParser = require("body-parser");
 var stormCommander = require("./local_modules/storm-commander");
 var discovery = require("./local_modules/discovery");
 var app = express();
+
+const COMMANDER_PORT = 3000;
  
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
  
 app.get("/", function(req, res) {
   res.status(200).send("Hello World");
+});
+
+app.get("/ping", function(req, res) {
+  res.status(200).send("pong");
 });
 
 app.post("/lightemup", function(req, res) {
@@ -62,8 +68,8 @@ app.get("/devices", function(req, res) {
   res.send(JSON.stringify(deviceList));
 });
 
-discovery.start();
+discovery.start(COMMANDER_PORT);
 
-var server = app.listen(3000, function () {
+var server = app.listen(COMMANDER_PORT, function () {
   console.log("Listening on port %s...", server.address().port);
 });
