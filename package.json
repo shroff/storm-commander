@@ -8,6 +8,8 @@
   "dependencies": {
     "body-parser": "^1.15.1",
     "express": "^4.13.4",
-    "serialport": "^3.1.2"
+    "express-validator": "^2.20.8",
+    "serialport": "^3.1.2",
+    "xbee": "0.0.4"
   }
 }

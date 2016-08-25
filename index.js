@@ -1,4 +1,5 @@
 var express = require("express");
+var validator = require("express-validator");
 var bodyParser = require("body-parser");
 var stormCommander = require("./local_modules/storm-commander");
 var discovery = require("./local_modules/discovery");
@@ -8,35 +9,60 @@ const COMMANDER_PORT = 3000;
  
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(validator());
  
 app.get("/", function(req, res) {
   res.status(200).send("Hello World");
 });
 
-app.get("/ping", function(req, res) {
-  res.status(200).send("pong");
-});
-
 app.post("/lightemup", function(req, res) {
-  if (!req.body || !req.body.color || !req.body.duration) {
-    return res.status(400).send("Must specify color and duration\n");
+  console.log(req.body);
+  req.checkBody("color", "Must specify color").notEmpty();
+  req.checkBody("trooper", "Must specify trooper").notEmpty();
+  req.checkBody("device", "Must specify device").notEmpty();
+
+  let validationErrors = req.validationErrors();
+  if (validationErrors) {
+    res.status(400).send(validationErrors);
+    return;
   }
+
+  let trooper = req.body.trooper;
+  let device = parseInt(req.body.device);
+
   let color = parseInt(req.body.color, 16);
-  let duration = parseInt(req.body.duration);
+  let duration = req.body.duration ? parseInt(req.body.duration) : 1000;
   let r = (color & 0xff0000) >> 16;
   let g = (color & 0xff00) >> 8;
   let b = (color & 0xff);
 
-  stormCommander.setColor(r >> 1, g >> 1, b >> 1, duration);
-
-  res.status(200);
-  res.send("Setting color to: " + r + ", " + g + ", " + b + ".\n");
+  let error = stormCommander.setColor(trooper, device, r >> 1, g >> 1, b >> 1, duration);
+  if (error) {
+    console.log(error);
+    res.status(400).send(error);
+  } else {
+    res.status(200);
+    res.send("Setting color to: " + r + ", " + g + ", " + b + ".\n");
+  }
 });
 
 app.post("/pulse", function(req, res) {
-  if (!req.body || !req.body.color1 || !req.body.color2 || !req.body.duration) {
-    return res.status(400).send("Must specify color\n");
+
+  console.log(req.body);
+  req.checkBody("color1", "Must specify color1").notEmpty();
+  req.checkBody("color2", "Must specify color2").notEmpty();
+  req.checkBody("trooper", "Must specify trooper").notEmpty();
+  req.checkBody("device", "Must specify device").notEmpty();
+
+  let validationErrors = req.validationErrors();
+  if (validationErrors) {
+    res.status(400).send(validationErrors);
+    return;
   }
+
+  let trooper = req.body.trooper;
+  let device = parseInt(req.body.device);
+
   let color1 = parseInt(req.body.color1, 16);
   let r1 = (color1 & 0xff0000) >> 16;
   let g1 = (color1 & 0xff00) >> 8;
@@ -47,25 +73,24 @@ app.post("/pulse", function(req, res) {
   let g2 = (color2 & 0xff00) >> 8;
   let b2 = (color2 & 0xff);
 
-  let duration = parseInt(req.body.duration);
+  let duration = req.body.duration ? parseInt(req.body.duration) : 1000;
 
-  stormCommander.pulse(r1 >> 1, g1 >> 1, b1 >> 1, r2 >> 1, g2 >> 1, b2 >> 1, duration);
+  let error = stormCommander.pulse(trooper, device, r1 >> 1, g1 >> 1, b1 >> 1, r2 >> 1, g2 >> 1, b2 >> 1, duration);
+  if (error) {
+    console.log(error);
+    res.status(400).send(error);
+  } else {
+    res.status(200);
+    let color1String = r1 + ", " + g1 + ", " + b1;
+    let color2String = r2 + ", " + g2 + ", " + b2;
+    res.send("Pulsing between " + color1String + " and " + color2String + " every " + duration + "ms");
+  }
 
-  res.status(200);
-  let color1String = r1 + ", " + g1 + ", " + b1;
-  let color2String = r2 + ", " + g2 + ", " + b2;
-  res.send("Pulsing between " + color1String + " and " + color2String + " every " + duration + "ms");
 });
 
-app.get("/devices", function(req, res) {
-  var deviceList = [
-    {
-      name: "test",
-      type: "rgbled",
-    },
-  ];
-  res.status(200);
-  res.send(JSON.stringify(deviceList));
+app.get("/ping", function(req, res) {
+  console.log(stormCommander.getTrooperDescriptions());
+  res.status(200).send(stormCommander.getTrooperDescriptions());
 });
 
 discovery.start(COMMANDER_PORT);
