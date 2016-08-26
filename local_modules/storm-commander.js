@@ -149,7 +149,7 @@ let getDeviceInfo = function(args) {
   return {
     trooper: trooper,
     index: device,
-    type: trooper.devices[device].type,
+    type: trooper.devices[device],
   }
 }
 let validateCommand = function(command, deviceInfo) {
@@ -176,7 +176,7 @@ var sendData = function(trooper, data) {
     console.log("Serial port is not open. Data: " + data);
     throw "Comms port is not open";
   }
-  console.log("Transmitting to " + trooperId);
+  console.log("Transmitting to " + trooper.addr16);
   console.log("Data: " + data);
 
   var tx = new xbee.TransmitRFData();
