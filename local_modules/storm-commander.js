@@ -86,58 +86,21 @@ xbeeSerial.on("data", function(packet) {
   }
 });
 
-let getDeviceInfo = function(args) {
-  if (args.device_type) {
-    return {
-      type: args.device_type,
-      index: -1
-    };
-  }
-  if (!(("trooper" in args) && ("device" in args))) {
-    throw "Missing device identifier";
-  }
-  let trooperId = args.trooper;
-  let tropper = troopers[trooperId]
-  if (trooper.devices.length <= device) {
-    throw "Could not find device " + device + " on trooper " + trooperId;
-  }
-  return {
-    trooper: trooper,
-    index: device,
-    type: trooper.devices[device].type,
-  }
-}
-
-var sendCommand = function(args) {
-  let deviceInfo = getDeviceInfo(args);
+let getCommand = function(args) {
   if (!("command" in args)) {
     throw "Command not specified";
   }
   let command = args.command;
-  if (!(deviceInfo.type in deviceCommands)) {
-    throw "Unknown device type(" + deviceInfo.type + ") for device " + deviceInfo.index;
-  }
-  if (!deviceCommands[deviceInfo.type].includes(command)) {
-    throw "Unknown command " + command + " for device of type " + deviceInfo.type;
-  }
   if (!command in commandParams) {
     throw "Parameters not known for command " + command;
   }
 
-  let params = constructParams(commandParams[command], args);
-
-  sendData(deviceInfo.trooper, "command " + deviceInfo.index + " " + command + " " + params + "x\n");
-}
-
-
-let constructParams = function(paramList, args) {
   var paramString = "";
-  for (param of paramList) {
+  for (param of commandParams[command]) {
     let value = (param.name in args) ? args[param.name] : param["default"];
     if (!value) {
       throw "No value found for required param " + param.name;
     }
-    console.log(param);
     switch (param.type) {
       case "byte":
         let byteVal = value & 0xff;
@@ -161,7 +124,48 @@ let constructParams = function(paramList, args) {
 
     paramString += " ";
   }
-  return paramString;
+
+  if ("debug_command" in args) {
+    throw "Constructed command: " + command + " " + paramString;
+  }
+
+  return {
+    name: command,
+    params: paramString
+  };
+}
+
+
+let getDeviceInfo = function(args) {
+  if (!(("trooper" in args) && ("device" in args))) {
+    throw "Missing device identifier";
+  }
+  let trooperId = args.trooper;
+  let device = parseInt(args.device);
+  let trooper = troopers[trooperId];
+  if (!trooper || trooper.devices.length <= device) {
+    throw "Could not find device " + device + " on trooper " + trooperId;
+  }
+  return {
+    trooper: trooper,
+    index: device,
+    type: trooper.devices[device].type,
+  }
+}
+let validateCommand = function(command, deviceInfo) {
+  if (!(deviceInfo.type in deviceCommands)) {
+    throw "Unknown device type(" + deviceInfo.type + ") for device " + deviceInfo.index;
+  }
+  if (!deviceCommands[deviceInfo.type].includes(command.name)) {
+    throw "Unknown command " + command + " for device of type " + deviceInfo.type;
+  }
+}
+
+var sendCommand = function(args) {
+  let command = getCommand(args);
+  let deviceInfo = getDeviceInfo(args);
+  validateCommand(command, deviceInfo);
+  sendData(deviceInfo.trooper, "command " + deviceInfo.index + " " + command.name + " " + command.params + "x\n");
 }
 
 var sendData = function(trooper, data) {
