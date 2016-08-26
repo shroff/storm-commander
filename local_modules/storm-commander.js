@@ -8,6 +8,39 @@ var xbeeSerial = new SerialPort("/dev/ttyUSB0", {
 var troopers = {};
 var trooperDescriptions = [];
 
+deviceCommands = {
+  "rgbled": ["c", "p"],
+}
+
+commandParams = {
+  "c": [
+    {
+      "name": "color",
+      "type": "color",
+    },
+    {
+      "name": "duration",
+      "type": "int",
+      "default": 1000,
+    },
+  ],
+  "p": [
+    {
+      "name": "color1",
+      "type": "color",
+    },
+    {
+      "name": "color2",
+      "type": "color",
+    },
+    {
+      "name": "duration",
+      "type": "int",
+      "default": 1000,
+    },
+  ]
+}
+
 const PREPARING = 0;
 const READY = 1;
 const ERROR = 2;
@@ -17,10 +50,12 @@ xbeeSerial.on("open", function() {
   console.log("xbee serial port opened");
   status = READY;
 });
+
 xbeeSerial.on("error", function() {
   console.log("Error opening serial port");
   status = ERROR;
 });
+
 xbeeSerial.on("data", function(packet) {
   if (packet instanceof Array && packet[0] == xbee.FT_TRANSMIT_ACKNOWLEDGED) {
     // TODO: Wait for packet acknowledgement before sending successful response
@@ -51,27 +86,92 @@ xbeeSerial.on("data", function(packet) {
   }
 });
 
-var sendCommand = function(trooperId, device, command, params) {
-  if (!(trooperId in troopers)) {
-    return "Could not find trooper with id " + trooperId;
+let getDeviceInfo = function(args) {
+  if (args.device_type) {
+    return {
+      type: args.device_type,
+      index: -1
+    };
   }
+  if (!(("trooper" in args) && ("device" in args))) {
+    throw "Missing device identifier";
+  }
+  let trooperId = args.trooper;
   let tropper = troopers[trooperId]
   if (trooper.devices.length <= device) {
-    return "Could not find device " + device + " on trooper " + trooperId;
+    throw "Could not find device " + device + " on trooper " + trooperId;
   }
-
-  let cmd = command + (params ? " " + params : "");
-  sendData(trooperId, "command " + device + " " + cmd + " x\n");
-  return null;
+  return {
+    trooper: trooper,
+    index: device,
+    type: trooper.devices[device].type,
+  }
 }
 
-var sendData = function(trooperId, data) {
-  if (!((trooperId in troopers) && xbeeSerial.isOpen())) {
-    console.log("Could not transmit to " + trooperId);
-    console.log("Data: " + data);
-    return false;
+var sendCommand = function(args) {
+  let deviceInfo = getDeviceInfo(args);
+  if (!("command" in args)) {
+    throw "Command not specified";
   }
-  var trooper = troopers[trooperId];
+  let command = args.command;
+  if (!(deviceInfo.type in deviceCommands)) {
+    throw "Unknown device type(" + deviceInfo.type + ") for device " + deviceInfo.index;
+  }
+  if (!deviceCommands[deviceInfo.type].includes(command)) {
+    throw "Unknown command " + command + " for device of type " + deviceInfo.type;
+  }
+  if (!command in commandParams) {
+    throw "Parameters not known for command " + command;
+  }
+
+  let params = constructParams(commandParams[command], args);
+
+  sendData(deviceInfo.trooper, "command " + deviceInfo.index + " " + command + " " + params + "x\n");
+}
+
+
+let constructParams = function(paramList, args) {
+  var paramString = "";
+  for (param of paramList) {
+    let value = (param.name in args) ? args[param.name] : param["default"];
+    if (!value) {
+      throw "No value found for required param " + param.name;
+    }
+    console.log(param);
+    switch (param.type) {
+      case "byte":
+        let byteVal = value & 0xff;
+        paramString += byteVal
+        break;
+
+      case "color":
+        let color = parseInt(value, 16);
+        // TODO: Make trooper accept 8-bit values instead of 7-bit
+        let r = (color & 0xff0000) >> 17;
+        let g = (color & 0xff00) >> 9;
+        let b = (color & 0xff) >> 1;
+        paramString += r + " " + g + " " + b;
+        break;
+
+      case "int":
+      default:
+        paramString += value;
+        break;
+    }
+
+    paramString += " ";
+  }
+  return paramString;
+}
+
+var sendData = function(trooper, data) {
+  if (!trooper) {
+    throw "Sending data, but trooper not specified: " + data;
+  }
+  if (!xbeeSerial.isOpen()) {
+    console.log("Serial port is not open. Data: " + data);
+    throw "Comms port is not open";
+  }
   console.log("Transmitting to " + trooperId);
   console.log("Data: " + data);
 
@@ -93,20 +193,9 @@ var getTrooperDescriptions = function() {
   return JSON.stringify(trooperDescriptions);
 }
 
-var setColor = function(trooper, device, r, g, b, duration) {
-  let params = r + " " + g + " " + b + " " + duration;
-  return sendCommand(trooper, device, "c", params);
-}
-
-var pulse = function(trooper, device, r1, g1, b1, r2, g2, b2, duration) {
-  let params = r1 + " " + g1 + " " + b1 + " " + r2 + " " + g2 + " " + b2 + " " + duration;
-  return sendCommand(trooper, device, "p", params);
-}
-
 var StormCommander = {
   getTrooperDescriptions: getTrooperDescriptions,
-  setColor: setColor,
-  pulse: pulse,
+  sendCommand: sendCommand,
   PREPARING: PREPARING,
   READY: READY,
   ERROR: ERROR
