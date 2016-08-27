@@ -1,12 +1,13 @@
-var SerialPort = require("serialport").SerialPort;
-var StormTrooper = require("./storm-trooper");
-var xbee = require('xbee');
-var xbeeSerial = new SerialPort("/dev/ttyUSB0", {
+let SerialPort = require("serialport").SerialPort;
+let StormTrooper = require("./storm-trooper");
+let DeviceManager = require("./device-manager");
+let DeviceInfo = require("./device-info");
+
+let xbee = require('xbee');
+let xbeeSerial = new SerialPort("/dev/ttyUSB0", {
   parser: xbee.packetParser()
 });
-
-var troopers = {};
-var trooperDescriptions = [];
+let deviceManager = new DeviceManager();
 
 deviceCommands = {
   "rgbled": ["c", "p"],
@@ -63,19 +64,11 @@ xbeeSerial.on("data", function(packet) {
   } else if (packet.bytes && packet.bytes[0] == xbee.FT_RECEIVE_RF_DATA) {
     if (packet.raw_data[0] == 0x7f) {
       // Capability broadcast packet
-      addr16hex = packet.remote16.hex;
+      id = packet.remote64.hex;
       addr16 = packet.remote16.dec;
       addr64 = packet.remote64.dec;
-      trooper = new StormTrooper(addr64, addr16, packet.raw_data.slice(1));
-      if (!(addr16hex in troopers)) {
-        console.log("Discovered trooper at " + addr16hex);
-        console.log(packet);
-        trooperDescriptions.push({
-          address: addr16hex,
-          devices: trooper.devices
-        })
-      }
-      troopers[addr16hex] = trooper;
+      trooper = new StormTrooper(id, addr64, addr16);
+      deviceManager.addTrooper(id, trooper, packet.raw_data.slice(1));
     } else {
       console.log("Unknown data packet");
       console.log(packet);
@@ -137,21 +130,13 @@ let getCommand = function(args) {
 
 
 let getDeviceInfo = function(args) {
-  if (!(("trooper" in args) && ("device" in args))) {
+  if (!("device" in args)) {
     throw "Missing device identifier";
   }
-  let trooperId = args.trooper;
-  let device = parseInt(args.device);
-  let trooper = troopers[trooperId];
-  if (!trooper || trooper.devices.length <= device) {
-    throw "Could not find device " + device + " on trooper " + trooperId;
-  }
-  return {
-    trooper: trooper,
-    index: device,
-    type: trooper.devices[device],
-  }
+  let deviceId = parseInt(args.device);
+  return deviceManager.getDeviceInfo(deviceId);
 }
+
 let validateCommand = function(command, deviceInfo) {
   if (!(deviceInfo.type in deviceCommands)) {
     throw "Unknown device type(" + deviceInfo.type + ") for device " + deviceInfo.index;
@@ -164,8 +149,9 @@ let validateCommand = function(command, deviceInfo) {
 var sendCommand = function(args) {
   let command = getCommand(args);
   let deviceInfo = getDeviceInfo(args);
+  let trooper = deviceManager.getTrooper(deviceInfo.trooperId);
   validateCommand(command, deviceInfo);
-  sendData(deviceInfo.trooper, "command " + deviceInfo.index + " " + command.name + " " + command.params + "x\n");
+  sendData(trooper, "command " + deviceInfo.index + " " + command.name + " " + command.params + "x\n");
 }
 
 var sendData = function(trooper, data) {
@@ -176,7 +162,7 @@ var sendData = function(trooper, data) {
     console.log("Serial port is not open. Data: " + data);
     throw "Comms port is not open";
   }
-  console.log("Transmitting to " + trooper.addr16);
+  console.log("Transmitting to " + trooper.addr64);
   console.log("Data: " + data);
 
   var tx = new xbee.TransmitRFData();
@@ -193,16 +179,14 @@ var sendData = function(trooper, data) {
   });
 }
 
-var getTrooperDescriptions = function() {
-  return JSON.stringify(trooperDescriptions);
+let getDevices = function() {
+  return JSON.stringify(deviceManager.devices);
 }
 
-var StormCommander = {
-  getTrooperDescriptions: getTrooperDescriptions,
+module.exports = {
+  getDevices: getDevices,
   sendCommand: sendCommand,
   PREPARING: PREPARING,
   READY: READY,
   ERROR: ERROR
 }
-
-module.exports = StormCommander;

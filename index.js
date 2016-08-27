@@ -27,8 +27,8 @@ app.post("/command", function(req, res) {
 });
 
 app.get("/ping", function(req, res) {
-  console.log(stormCommander.getTrooperDescriptions());
-  res.status(200).send(stormCommander.getTrooperDescriptions());
+  console.log(stormCommander.getDevices());
+  res.status(200).send(stormCommander.getDevices());
 });
 
 discovery.start(COMMANDER_PORT);
