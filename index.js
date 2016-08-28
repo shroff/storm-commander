@@ -26,7 +26,7 @@ app.post("/command", function(req, res) {
   }
 });
 
-app.get("/ping", function(req, res) {
+app.get("/device_list", function(req, res) {
   console.log(stormCommander.getDevices());
   res.status(200).send(stormCommander.getDevices());
 });
