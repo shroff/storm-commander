@@ -18,8 +18,8 @@ class DeviceManager {
       this.troopers[id] = newTrooper;
       console.log("Discovered trooper at " + id);
     }
-    trooper = this.troopers[id];
-    trooper.devices = this._matchDevices(trooper.devices, deviceTypes);
+    let trooper = this.troopers[id];
+    trooper.devices = this._matchDevices(trooper, deviceTypes);
   }
 
   getDeviceInfo(deviceId) {
@@ -36,7 +36,7 @@ class DeviceManager {
     throw "Unknown Trooper ID: " + trooperId;
   }
 
-  _matchDevices(existing, incomingInts) {
+  _matchDevices(trooper, incomingInts) {
     let incoming = incomingInts.map(function(typeInt) {
       if (typeInt in deviceTypeMap) {
         return deviceTypeMap[typeInt];
@@ -46,14 +46,14 @@ class DeviceManager {
 
     var match = 0;
     // Find all the matching devices
-    for (match = 0; match < Math.min(incoming.length, existing.length); match++) {
-      if (existing[match].type !== incoming[match]) {
+    for (var match = 0; match < Math.min(incoming.length, trooper.devices.length); match++) {
+      if (trooper.devices[match].type !== incoming[match]) {
         break;
       }
     }
 
-    let remaining = existing.slice(0, match);
-    let removedIds = existing.slice(match).map((device) => {
+    let remaining = trooper.devices.slice(0, match);
+    let removedIds = trooper.devices.slice(match).map((device) => {
       return device.id;
     });
     let added = incoming.slice(match).map((type, index) => {
