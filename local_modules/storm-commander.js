@@ -147,9 +147,9 @@ class StormCommander {
         case "color":
           let color = parseInt(value, 16);
           // TODO: Make trooper accept 8-bit values instead of 7-bit
-          let r = (color & 0xff0000) >> 17;
-          let g = (color & 0xff00) >> 9;
-          let b = (color & 0xff) >> 1;
+          let r = (color & 0xff0000) >> 16;
+          let g = (color & 0xff00) >> 8;
+          let b = (color & 0xff);
           paramString += r + " " + g + " " + b;
           break;
 
