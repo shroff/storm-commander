@@ -1,3 +1,4 @@
+require("console-stamp")(console, { pattern : "yyyy-mm-dd HH:MM:ss.l" });
 var express = require("express");
 var validator = require("express-validator");
 var bodyParser = require("body-parser");
