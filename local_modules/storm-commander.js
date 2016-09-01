@@ -89,6 +89,10 @@ class StormCommander {
     return this.deviceManager.devices;
   }
 
+  onTrooperDevicesChanged(fn) {
+    this.deviceManager.onTrooperDevicesChanged(fn);
+  }
+
   sendCommand(args) {
     let command = this._getCommand(args);
     let deviceInfo = this._getDeviceInfo(args);

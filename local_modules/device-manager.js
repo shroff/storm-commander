@@ -1,4 +1,5 @@
 let DeviceInfo = require("./device-info");
+let EventEmitter = require("events");
 let deviceTypeMap = {
   0: "unknown",
   1: "rgbled",
@@ -11,13 +12,22 @@ class DeviceManager {
     this.deviceMap = {};
     this.devices = [];
     this.deviceCounter = 0;
+    this.emitter = new EventEmitter();
   }
 
   addTrooper(id, trooper, deviceTypes) {
     let existingDevices = (id in this.troopers) ? this.troopers[id].devices : [];
-    trooper.devices = this._matchDevices(existingDevices, deviceTypes, id);
+    let match = this._matchDevices(existingDevices, deviceTypes, id);
+    trooper.devices = match.devices;
     this.troopers[id] = trooper;
-    console.log("Discovered Trooper: ", trooper);
+    console.log("Trooper discovered at " + id);
+    if (match.changed) {
+      this.emitter.emit("trooperDevicesChanged", this.troopers);
+    }
+  }
+
+  onTrooperDevicesChanged(fn) {
+    this.emitter.on("trooperDevicesChanged", fn);
   }
 
   getDeviceInfo(deviceId) {
@@ -43,6 +53,7 @@ class DeviceManager {
     });
 
     var match = 0;
+    var changed = false;
     // Find all the matching devices
     for (var match = 0; match < Math.min(incoming.length, devices.length); match++) {
       if (devices[match].type !== incoming[match]) {
@@ -72,14 +83,19 @@ class DeviceManager {
     
     // Update the device map
     for (let removedId of removedIds) {
+      changed = true;
       delete this.deviceMap[removedId];
     }
 
     for (let addedDevice of added) {
+      changed = true;
       this.deviceMap[addedDevice.id] = addedDevice;
     }
 
-    return remaining.concat(added);
+    return {
+      devices: remaining.concat(added),
+      changed: changed,
+    }
   }
 
 }
