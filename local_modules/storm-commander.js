@@ -31,7 +31,8 @@ class StormCommander {
       let diff = deviceMatcher.match(existingDevices, devices);
       trooper.devices = diff.remaining.concat(diff.added);
       this.troopers[id] = trooper;
-      console.log('Trooper discovered at ' + id);
+      console.log('Trooper discovered: ');
+      console.log(trooper);
 
       if (this._updateDevices(diff, id)) {
         console.log("Troopers Updated");

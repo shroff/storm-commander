@@ -38,6 +38,13 @@ class XbeeCommander extends EventEmitter {
           console.log('Unknown stormy data packet');
           console.log(frame.data);
         }
+      } else if (frame.type == C.FRAME_TYPE.ZIGBEE_TRANSMIT_STATUS) {
+        if (frame.deliveryStatus == C.DELIVERY_STATUS.SUCCESS) {
+          console.log('Frame ' + frame.id + ' delivered ');
+        } else {
+          console.log('Delivery Failed');
+          console.log(frame);
+        }
       } else {
         console.log('Unknown xbee frame');
         console.log(frame);
@@ -64,12 +71,17 @@ class XbeeCommander extends EventEmitter {
     console.log('Transmitting to ' + trooper.addr64);
     console.log('Data: ' + data);
 
+    let id = this.xbee.nextFrameId();
+
     var tx = {
       type: C.FRAME_TYPE.ZIGBEE_TRANSMIT_REQUEST,
+      id: id,
       destination64: trooper.addr64,
       destination16: trooper.addr16,
       data: data,
     }
+
+    console.log('Sending Frame ' + id);
 
     this.xbeeSerial.write(this.xbee.buildFrame(tx), (err, bytesWritten) => {
       if (err) {
