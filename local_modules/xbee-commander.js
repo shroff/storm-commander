@@ -1,44 +1,56 @@
 let SerialPort = require('serialport').SerialPort;
-let xbee = require('xbee');
+var xbee_api = require('xbee-api');
+var C = xbee_api.constants;
 let EventEmitter = require('events');
 let StormTrooper = require('./storm-trooper');
 
 class XbeeCommander extends EventEmitter {
   constructor(port) {
     super();
+    let xbee = new xbee_api.XBeeAPI();
     let xbeeSerial = new SerialPort(port, {
-      parser: xbee.packetParser()
+      parser: xbee.rawParser()
     });
 
+    // Serial Port Opened
     xbeeSerial.on('open', () => {
       console.log('xbee serial port opened');
     });
 
-    xbeeSerial.on('error', () => {
-      console.log('Error opening serial port');
+    // Serial Port Error
+    xbeeSerial.on('error', (err) => {
+      console.log('Error opening serial port', err);
     });
 
-    xbeeSerial.on('data', (packet) => {
-      if (packet instanceof Array && packet[0] == xbee.FT_TRANSMIT_ACKNOWLEDGED) {
-        // TODO: Wait for packet acknowledgement before sending successful response
-        console.log('Received ack for frame ' + packet[1]);
-      } else if (packet.bytes && packet.bytes[0] == xbee.FT_RECEIVE_RF_DATA) {
-        if (packet.raw_data[0] == 0x7f) {
+    // Checksum error
+    xbee.on('error', (err) => {
+      console.log(err);
+    });
+
+    xbee.on('frame_object', (frame) => {
+      if (frame.type == C.FRAME_TYPE.ZIGBEE_RECEIVE_PACKET) {
+        if (frame.data[0] == 0x7f) {
           // Capability broadcast packet
-          let id = packet.remote64.hex;
-          let trooper = new StormTrooper(id, packet.remote64.dec, packet.remote16.dec);
-          this.emit('newTrooper', id, trooper,packet.raw_data.slice(1));
+          let id = frame.remote64;
+          let trooper = new StormTrooper(id, frame.remote64, frame.remote16);
+          this.emit('newTrooper', id, trooper, frame.data.slice(1));
         } else {
-          console.log('Unknown data packet');
-          console.log(packet);
+          console.log('Unknown stormy data packet');
+          console.log(frame.data);
         }
       } else {
-        console.log('Unknown xbee packet');
-        console.log(packet);
+        console.log('Unknown xbee frame');
+        console.log(frame);
       }
     });
 
+    xbee.on('raw_frame', (rawFrame) => {
+      console.log('Unrecognized frame:');
+      console.log(rawFrame);
+    });
+
     this.xbeeSerial = xbeeSerial;
+    this.xbee = xbee;
   }
 
   sendData(trooper, data) {
@@ -52,12 +64,14 @@ class XbeeCommander extends EventEmitter {
     console.log('Transmitting to ' + trooper.addr64);
     console.log('Data: ' + data);
 
-    var tx = new xbee.TransmitRFData();
-    tx.destination64 = trooper.addr64;
-    tx.destination16 = trooper.addr16;
-    tx.RFData = data;
+    var tx = {
+      type: C.FRAME_TYPE.ZIGBEE_TRANSMIT_REQUEST,
+      destination64: trooper.addr64,
+      destination16: trooper.addr16,
+      data: data,
+    }
 
-    this.xbeeSerial.write(tx.getBytes(), (err, bytesWritten) => {
+    this.xbeeSerial.write(this.xbee.buildFrame(tx), (err, bytesWritten) => {
       if (err) {
         console.log('Error: ', err.message);
       } else {

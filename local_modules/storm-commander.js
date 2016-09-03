@@ -1,7 +1,7 @@
 let commandParser = require('./command-parser');
 let commandValidator = require('./command-validator');
 let deviceMatcher = require('./device-matcher');
-let XbeeCommander = require('./xbee-commander');
+let XBeeCommander = require('./xbee-commander');
 let util = require('util');
 
 class StormCommander {
@@ -25,7 +25,7 @@ class StormCommander {
     }
     console.log(this.deviceMap);
 
-    this.xbeeCommander = new XbeeCommander(serialPort)
+    this.xbeeCommander = new XBeeCommander(serialPort)
     this.xbeeCommander.on('newTrooper', (id, trooper, devices) => {
       let existingDevices = (id in this.troopers) ? this.troopers[id].devices : [];
       let diff = deviceMatcher.match(existingDevices, devices);

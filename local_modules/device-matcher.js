@@ -5,7 +5,7 @@ let deviceTypeMap = {
 }
 
 let match = function(devices, incomingTypes) {
-  let incoming = incomingTypes.map(function(typeInt) {
+  let incoming = Array.from(incomingTypes, (typeInt) => {
     if (typeInt in deviceTypeMap) {
       return deviceTypeMap[typeInt];
     }
