@@ -1,11 +1,12 @@
 class DeviceInfo {
-  constructor(id, type, trooperId, index) {
-    this.id = id;
+  constructor(type, index) {
     this.name = null;
     this.type = type;
-    this.trooperId = trooperId;
     this.index = index;
+    this.trooperId = null;
+    this.id = null;
   }
+
 }
 
 module.exports = DeviceInfo;
