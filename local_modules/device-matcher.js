@@ -1,7 +1,7 @@
 let deviceTypeMap = {
   0: 'unknown',
   1: 'rgbled',
-  2: 'led',
+  2: 'dimmable',
 }
 
 let match = function(devices, incomingTypes) {
