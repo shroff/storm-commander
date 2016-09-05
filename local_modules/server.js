@@ -33,6 +33,17 @@ let start = function(commander, port) {
       }
     });
 
+    app.post('/rename_device', (req, res) => {
+      console.log(req.body);
+      let error = commander.renameDevice(req.body);
+      if (error) {
+        console.log(error);
+        res.status(400).send(error);
+      } else {
+        res.status(200).send('Device Successfully Renamed');
+      }
+    });
+
     app.get('/device_list', (req, res) => {
       console.log(commander.getDevices());
       res.status(200).send(JSON.stringify(commander.getDevices()));
