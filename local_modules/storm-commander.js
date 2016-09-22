@@ -2,6 +2,7 @@ let commandParser = require('./command-parser');
 let commandValidator = require('./command-validator');
 let deviceMatcher = require('./device-matcher');
 let XBeeCommander = require('./xbee-commander');
+let util = require('util');
 
 class StormCommander {
   constructor(serialPort, save, data) {
@@ -24,14 +25,17 @@ class StormCommander {
       let existingDevices = (id in this.troopers) ? this.troopers[id].devices : [];
       let diff = deviceMatcher.match(existingDevices, devices);
       trooper.devices = diff.remaining.concat(diff.added);
+      if (id in this.troopers && trooper.addr16 != this.troopers[id].addr16) {
+        console.log('Local Address of ' + id + ' changed from ' + this.troopers[id].addr16 + ' to ' + trooper.addr16);
+      }
       this.troopers[id] = trooper;
 
       if (this._updateDeviceMap(diff, id)) {
         this._recomputeDevices();
-        console.log("Troopers Updated");
-        console.log(frame);
-        console.log(diff);
-        console.log((this.troopers));
+        console.log('Troopers Updated');
+        console.log(util.inspect(frame, { depth: null }));
+        console.log(util.inspect(diff, { depth: null }));
+        console.log(util.inspect(this.troopers, { depth: null }));
         this.save();
       }
     });
