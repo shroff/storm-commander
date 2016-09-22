@@ -20,17 +20,16 @@ class StormCommander {
     }
 
     this.xbeeCommander = new XBeeCommander(serialPort)
-    this.xbeeCommander.on('newTrooper', (id, trooper, devices) => {
+    this.xbeeCommander.on('newTrooper', (id, trooper, devices, frame) => {
       let existingDevices = (id in this.troopers) ? this.troopers[id].devices : [];
       let diff = deviceMatcher.match(existingDevices, devices);
       trooper.devices = diff.remaining.concat(diff.added);
       this.troopers[id] = trooper;
-      console.log('Trooper discovered: ');
-      console.log(trooper.id);
 
       if (this._updateDeviceMap(diff, id)) {
         this._recomputeDevices();
         console.log("Troopers Updated");
+        console.log(frame);
         console.log(diff);
         console.log((this.troopers));
         this.save();

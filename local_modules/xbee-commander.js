@@ -33,7 +33,7 @@ class XbeeCommander extends EventEmitter {
           // Capability broadcast packet
           let id = frame.remote64;
           let trooper = new StormTrooper(id, frame.remote64, frame.remote16);
-          this.emit('newTrooper', id, trooper, frame.data.slice(1));
+          this.emit('newTrooper', id, trooper, frame.data.slice(1), frame);
         } else {
           console.log('Unknown stormy data packet');
           console.log(frame.data);
