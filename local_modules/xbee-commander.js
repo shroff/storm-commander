@@ -29,14 +29,43 @@ class XbeeCommander extends EventEmitter {
 
     xbee.on('frame_object', (frame) => {
       if (frame.type == C.FRAME_TYPE.ZIGBEE_RECEIVE_PACKET) {
-        if (frame.data[0] == 0x7f) {
+        // Frame data structure:
+        // 1 byte checksum of length, type, and data.
+        // 1 byte type
+        // 1 byte length of type-specific data
+        // up to 255 bytes of data
+
+        let data = frame.data;
+
+
+        // Ensure length
+        if (data.length < 3 || data.length !== data[2] + 3) {
+          console.log("Malformed frame");
+          console.log(data);
+          return;
+        }
+
+        // TODO: verify checksum
+        var total = 0;
+        for (var i = 1; i < data.length; i++) {
+          total += data[i];
+        }
+        if ((data[0] + total) % 255 !== 0) {
+          console.log("Invalid checksum");
+          console.log(data);
+          return;
+        }
+
+        var type = data[1];
+        if (type === 0x7f) {
+          console.log("Processing capabilities");
           // Capability broadcast packet
           let id = frame.remote64;
           let trooper = new StormTrooper(id, frame.remote64, frame.remote16);
-          this.emit('newTrooper', id, trooper, frame.data.slice(1), frame);
+          this.emit('newTrooper', id, trooper, data.slice(3), frame);
         } else {
           console.log('Unknown stormy data packet');
-          console.log(frame.data);
+          console.log(data);
         }
       } else if (frame.type == C.FRAME_TYPE.ZIGBEE_TRANSMIT_STATUS) {
         if (frame.deliveryStatus == C.DELIVERY_STATUS.SUCCESS) {
