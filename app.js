@@ -22,6 +22,9 @@ let app = function(commander) {
   app.use('/', index);
   app.use('/api', api(commander));
 
+  app.set('view engine', 'ejs');
+  app.set('views', path.join(__dirname, 'views'));
+
   // catch 404 and forward to error handler
   app.use(function(req, res, next) {
     var err = new Error('Not Found');
@@ -37,7 +40,7 @@ let app = function(commander) {
 
     // render the error page
     res.status(err.status || 500);
-    res.send(err.message);
+    res.render("error");
   });
 
   return app;
