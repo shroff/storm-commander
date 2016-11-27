@@ -1,5 +1,4 @@
 let fs = require("fs");
-let commandParser = require("./command-parser");
 let commandValidator = require("./command-validator");
 let deviceMatcher = require("./device-matcher");
 let XBeeCommander = require("./xbee-commander");
@@ -61,28 +60,22 @@ class StormCommander {
     return this.devices;
   }
 
-  sendCommand(args) {
-    let command = commandParser.parse(args);
-    let device = this._getDevice(args);
+  sendCommand(deviceId, command) {
+    let device = this._getDevice(deviceId);
     let trooper = this._getTrooper(device.trooperId);
     commandValidator.validate(device, command);
     this.xbeeCommander.sendData(trooper, "command " + device.index + " " + command.name + " " + command.params + "x\n");
   }
 
-  renameDevice(args) {
-    let device = this._getDevice(args);
-    device.name = args.name ? args.name : null;
-    console.log("Renamed Device:");
-    console.log(device);
+  renameDevice(deviceId, name) {
+    let device = this._getDevice(deviceId);
+    device.name = name ? name : null;
+    console.log("Renamed Device %d to %s", deviceId,name);
     this._recomputeDevices();
     this.save();
   }
 
-  _getDevice(args) {
-    if (!("device" in args)) {
-      throw "Missing device identifier";
-    }
-    let deviceId = parseInt(args.device);
+  _getDevice(deviceId) {
     if (deviceId in this.deviceMap) {
       return this.deviceMap[deviceId];
     }
