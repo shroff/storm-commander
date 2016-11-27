@@ -8,10 +8,14 @@
   "dependencies": {
     "body-parser": "^1.15.1",
     "console-stamp": "^0.2.2",
+    "cookie-parser": "~1.4.3",
+    "debug": "~2.2.0",
     "events": "^1.1.1",
     "express": "^4.13.4",
     "express-validator": "^2.20.8",
+    "morgan": "~1.7.0",
     "serialport": "^3.1.2",
-    "xbee-api": "0.5.0"
+    "serve-favicon": "~2.3.0",
+    "xbee-api": "0.4.6"
   }
 }
