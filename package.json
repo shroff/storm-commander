@@ -1,11 +1,19 @@
 {
   "name": "stormy",
-  "version": "1.0.0",
+  "version": "0.1.1",
   "description": "Stormy server",
   "main": "index.js",
   "author": "Abhishek Shroff",
   "license": "ISC",
+  "scripts": {
+    "build": "webpack",
+    "start": "npm run build && node server.js"
+  },
   "dependencies": {
+    "babel-core": "^6.18.2",
+    "babel-loader": "^6.2.8",
+    "babel-preset-es2015": "^6.18.0",
+    "babel-preset-react": "^6.16.0",
     "body-parser": "^1.15.1",
     "console-stamp": "^0.2.2",
     "cookie-parser": "~1.4.3",
@@ -15,8 +23,17 @@
     "express": "^4.13.4",
     "express-validator": "^2.20.8",
     "morgan": "~1.7.0",
+    "react": "^15.4.1",
+    "react-dom": "^15.4.1",
     "serialport": "^3.1.2",
     "serve-favicon": "~2.3.0",
+    "webpack": "^1.13.3",
     "xbee-api": "0.4.6"
+  },
+  "babel": {
+    "presets": [
+      "es2015",
+      "react"
+    ]
   }
 }

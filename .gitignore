@@ -1,6 +1,9 @@
 # Persistence file
 commander.json
 
+# Generated files
+bundle.js
+
 # Temp files
 *.swp
 *.swo
