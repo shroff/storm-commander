@@ -7,7 +7,7 @@
   "license": "ISC",
   "scripts": {
     "build": "webpack",
-    "start": "npm run build && node server.js"
+    "start": "npm run build && node server/server.js | tee stormy.log"
   },
   "dependencies": {
     "babel-core": "^6.18.2",

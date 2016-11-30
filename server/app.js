@@ -17,7 +17,7 @@ let app = function(commander) {
   app.use(bodyParser.json());
   app.use(bodyParser.urlencoded({ extended: false }));
   app.use(cookieParser());
-  app.use('/static', express.static(path.join(__dirname, 'client/static')));
+  app.use('/static', express.static(path.join(__dirname, '../client/static')));
 
   app.use('/', index);
   app.use('/api', api(commander));
