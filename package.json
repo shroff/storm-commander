@@ -6,8 +6,9 @@
   "author": "Abhishek Shroff",
   "license": "ISC",
   "scripts": {
-    "build": "webpack",
-    "start": "npm run build && node server/server.js | tee stormy.log"
+    "start": "concurrent \"npm run server\" \"npm run client\"",
+    "server": "node server/server.js > stormy.log",
+    "client": "cd client && npm start"
   },
   "dependencies": {
     "babel-core": "^6.18.2",

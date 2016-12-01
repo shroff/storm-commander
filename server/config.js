@@ -1,6 +1,6 @@
 var config = {};
 
-config.httpPort = 3000;
+config.httpPort = 3001;
 config.xbeeSerial = "/dev/ttyUSB0"
 config.devicesJson = "commander.json"
 
