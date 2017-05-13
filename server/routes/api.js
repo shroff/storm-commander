@@ -24,7 +24,7 @@ let api = function(commander) {
     console.log(req.body);
 
     let deviceId = _getDeviceId(req.body)
-    let args = req.body.name
+    let name = req.body.name
 
     try {
       commander.renameDevice(deviceId, name);
