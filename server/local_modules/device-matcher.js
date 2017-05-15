@@ -1,7 +1,20 @@
+let Device = require("./devices/device");
+let DimmableDevice = require("./devices/dimmable-device");
+
 let deviceTypeMap = {
   0: 'unknown',
   1: 'rgbled',
-  2: 'dimmable',
+  2: DimmableDevice.type(),
+}
+
+let createDevice = function(index, deviceType) {
+  switch (deviceType) {
+    case DimmableDevice.type():
+      return new DimmableDevice(index);
+
+    default:
+      return new Device(index, deviceType, {});
+  }
 }
 
 let match = function(devices, incomingTypes) {
@@ -24,10 +37,7 @@ let match = function(devices, incomingTypes) {
   let remaining = devices.slice(0, match);
   let removed = devices.slice(match);
   let added = incoming.slice(match).map((type, index) => {
-    return {
-      type: type,
-      index: index,
-    };
+    return createDevice(index, type);
   });
 
   return {
@@ -38,5 +48,6 @@ let match = function(devices, incomingTypes) {
 }
 
 module.exports = {
-  match: match
+  match: match,
+  createDevice:createDevice
 }

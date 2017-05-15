@@ -69,8 +69,8 @@ class StormCommander {
 
   renameDevice(deviceId, name) {
     let device = this._getDevice(deviceId);
-    device.name = name ? name : null;
-    console.log("Renamed Device %d to %s", deviceId,name);
+    device.state.name = name ? name : null;
+    console.log("Renamed Device %d to %s", deviceId, name);
     this._recomputeDevices();
     this.save();
   }
@@ -113,6 +113,13 @@ class StormCommander {
       let trooper = this.troopers[id];
       if (reconstruct) {
         trooper.addr16 = [0xff, 0xfe];
+        trooper.devices = trooper.devices.map((device) => {
+          let newDevice = deviceMatcher.createDevice(device.index, device.type);
+          newDevice.state = device.state;
+          newDevice.id = device.id;
+          newDevice.trooperId = device.trooperId;
+          return newDevice;
+        });
       }
       for (let device of trooper.devices) {
         if (reconstruct) {
@@ -121,7 +128,7 @@ class StormCommander {
         this.devices.push({
           id: device.id,
           type: device.type,
-          name: device.name,
+          state: device.state,
         });
       }
     }
