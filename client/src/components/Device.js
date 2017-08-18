@@ -11,7 +11,7 @@ class Device extends Component {
     var controller = null;
 
     if (device.type === "dimmable") {
-      controller = <DimmableDeviceController deviceId={this.props.device.id}/>
+      controller = <DimmableDeviceController device={this.props.device}/>
     } else {
       controller = <div>
         Unknown Type <span className='mono'> {device.type} </span>
