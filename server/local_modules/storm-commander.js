@@ -63,8 +63,8 @@ class StormCommander {
   sendCommand(deviceId, command) {
     let device = this._getDevice(deviceId);
     let trooper = this._getTrooper(device.trooperId);
-    commandValidator.validate(device, command);
-    this.xbeeCommander.sendData(trooper, "command " + device.index + " " + command.name + " " + command.params + "x\n");
+    let commandString = device.generateCommandString(command);
+    this.xbeeCommander.sendData(trooper, "command " + device.index + " " + commandString + " x\n");
   }
 
   renameDevice(deviceId, name) {

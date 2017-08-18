@@ -39,17 +39,19 @@ class DimmableDevice extends Component {
   render() {
     return (
       <div>
+      <button onClick={this.handleSet.bind(this)}>On</button>
+      <button onClick={this.handleOff.bind(this)}>Off</button>
+      </div>
+    );
+  }
+    /*
       <InputRange
         maxValue={100}
         minValue={0}
         value={this.state.value}
         onChange={this.handleValueChange.bind(this)}
       />
-      <button onClick={this.handleSet.bind(this)}>Set</button>
-      <button onClick={this.handleOff.bind(this)}>Off</button>
-      </div>
-    );
-  }
+    */
 }
 
 export default DimmableDevice;

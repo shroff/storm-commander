@@ -7,6 +7,7 @@ import '../css/Device.css'
 class Device extends Component {
   render() {
     let device = this.props.device;
+    console.log(device);
     var controller = null;
 
     if (device.type === "dimmable") {
@@ -19,8 +20,8 @@ class Device extends Component {
 
     return (
       <div className="device">
-        <Header as='h2' className={'name' + device.name ? '' : ' anonymous'}>
-          {device.name ? device.name : "Anonymous Device"}
+        <Header as='h2' className={'name' + device.state.name ? '' : ' anonymous'}>
+          {device.state.name ? device.state.name : "Anonymous Device"}
         </Header>
         {controller}
       </div>
