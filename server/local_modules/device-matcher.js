@@ -49,5 +49,5 @@ let match = function(devices, incomingTypes) {
 
 module.exports = {
   match: match,
-  createDevice:createDevice
+  createDevice: createDevice
 }

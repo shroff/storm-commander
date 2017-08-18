@@ -1,5 +1,4 @@
 let express = require('express')
-let commandParser = require("../local_modules/command-parser");
 
 let api = function(commander) {
   let router = express.Router();
@@ -8,10 +7,9 @@ let api = function(commander) {
     console.log(req.body);
 
     let deviceId = _getDeviceId(req.body)
-    let command = commandParser.parse(req.body);
 
     try {
-      commander.sendCommand(deviceId, command);
+      commander.sendCommand(deviceId, req.body.command, req.body.debug);
       res.status(200).send('Command Successful');
     } catch (err) {
       console.log(err);

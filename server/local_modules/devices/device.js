@@ -6,7 +6,7 @@ class Device {
   }
 
   generateCommandString(command) {
-    throw "Unable to generate command string for " + command;
+    throw "Unrecognized command for device type " + this.type + ": " + command;
   }
 }
 

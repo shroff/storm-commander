@@ -1,5 +1,4 @@
 let fs = require("fs");
-let commandValidator = require("./command-validator");
 let deviceMatcher = require("./device-matcher");
 let XBeeCommander = require("./xbee-commander");
 let util = require("util");
@@ -60,10 +59,13 @@ class StormCommander {
     return this.devices;
   }
 
-  sendCommand(deviceId, command) {
+  sendCommand(deviceId, command, debug) {
     let device = this._getDevice(deviceId);
     let trooper = this._getTrooper(device.trooperId);
     let commandString = device.generateCommandString(command);
+    if (debug) {
+      console.log('generated command: ' + commandString);
+    }
     this.xbeeCommander.sendData(trooper, "command " + device.index + " " + commandString + " x\n");
   }
 

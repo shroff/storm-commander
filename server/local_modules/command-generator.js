@@ -1,3 +1,5 @@
+let util = require('util')
+
 let commandParams = {
   'c': [
     {
@@ -38,20 +40,17 @@ let commandParams = {
   ],
 }
 
-parse = function(args) {
-  if (!('command' in args)) {
-    throw 'Command not specified';
-  }
-  let command = args.command;
+generateCommandString = function(command, params) {
   if (!command in commandParams) {
     throw 'Parameters not known for command ' + command;
   }
 
   var paramString = '';
   for (let param of commandParams[command]) {
-    let value = (param.name in args) ? args[param.name] : param['default'];
-    if (!value) {
-      throw 'No value found for required param ' + param.name;
+    paramString += ' ';
+    let value = (param.name in params) ? params[param.name] : param['default'];
+    if (value == undefined) {
+      throw 'No value found for required param ' + param.name + ' in ' + util.inspect(params);
     }
     switch (param.type) {
       case 'byte':
@@ -73,20 +72,11 @@ parse = function(args) {
         paramString += value;
         break;
     }
-
-    paramString += ' ';
   }
 
-  if ('debug_command' in args) {
-    throw 'Constructed command: ' + command + ' ' + paramString;
-  }
-
-  return {
-    name: command,
-    params: paramString
-  };
+  return command + paramString;
 }
 
 module.exports = {
-  parse: parse,
+  generateCommandString: generateCommandString
 }
