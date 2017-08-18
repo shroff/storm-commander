@@ -7,9 +7,11 @@ let api = function(commander) {
     console.log(req.body);
 
     let deviceId = _getDeviceId(req.body)
+    let command = req.body.command
+    let debug = req.body.debug
 
     try {
-      commander.sendCommand(deviceId, req.body.command, req.body.debug);
+      commander.sendCommand(deviceId, command, debug);
       res.status(200).send('Command Successful');
     } catch (err) {
       console.log(err);
@@ -18,14 +20,17 @@ let api = function(commander) {
     }
   });
 
-  router.post('/rename_device', (req, res) => {
+  router.post('/update_state', (req, res) => {
     console.log(req.body);
 
     let deviceId = _getDeviceId(req.body)
     let name = req.body.name
+    let value = req.body.value
+    let debug = req.body.debug
+
 
     try {
-      commander.renameDevice(deviceId, name);
+      commander.updateState(deviceId, name, value, debug);
       res.status(200).send('Device Successfully Renamed');
     } catch (err) {
       console.log(err);

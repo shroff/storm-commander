@@ -3,25 +3,16 @@ import React, { Component } from 'react';
 class DimmableDevice extends Component {
   constructor(props) {
     super(props);
-    this.state = {
-      value: 100
-    }
   }
 
-  handleValueChange(component, value) {
-    this.setState({
-      value: value,
-    });
-  }
-
-  handleSet(component) {
-    this.setValue(this.state.value);
+  handleOn(component) {
+    this.sendCommand('on');
   }
   handleOff(component) {
-    this.setValue(0);
+    this.sendCommand('off');
   }
 
-  setValue(value) {
+  sendCommand(command) {
     fetch('/api/command', {
       method: 'POST',
       headers: {
@@ -29,8 +20,7 @@ class DimmableDevice extends Component {
       },
       body: JSON.stringify({
           device: this.props.deviceId,
-          command: "b",
-          value: Math.round(value * 255 / 100) + ""
+          command: command,
         })
     })
   }
@@ -38,19 +28,11 @@ class DimmableDevice extends Component {
   render() {
     return (
       <div>
-      <button onClick={this.handleSet.bind(this)}>On</button>
+      <button onClick={this.handleOn.bind(this)}>On</button>
       <button onClick={this.handleOff.bind(this)}>Off</button>
       </div>
     );
   }
-    /*
-      <InputRange
-        maxValue={100}
-        minValue={0}
-        value={this.state.value}
-        onChange={this.handleValueChange.bind(this)}
-      />
-    */
 }
 
 export default DimmableDevice;

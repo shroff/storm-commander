@@ -8,6 +8,13 @@ class Device {
   generateCommandString(command) {
     throw "Unrecognized command for device type " + this.type + ": " + command;
   }
+
+  updateState(name, value) {
+    if (name !== 'name') {
+      throw "Trying to update unrecognized state " + name + " to " + value;
+    }
+    this.state[name] = value
+  }
 }
 
 module.exports = Device;

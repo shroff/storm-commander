@@ -69,11 +69,15 @@ class StormCommander {
     this.xbeeCommander.sendData(trooper, "command " + device.index + " " + commandString + " x\n");
   }
 
-  renameDevice(deviceId, name) {
+  updateState(deviceId, name, value, debug) {
     let device = this._getDevice(deviceId);
-    device.state.name = name ? name : null;
-    console.log("Renamed Device %d to %s", deviceId, name);
-    this._recomputeDevices();
+    let command = device.updateState(name, value);
+    if (debug) {
+      console.log('updating ' + name + ' to ' + value);
+    }
+    if (command) {
+      this.sendCommand(deviceId, command, debug);
+    }
     this.save();
   }
 
